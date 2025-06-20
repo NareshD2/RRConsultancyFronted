@@ -1,0 +1,54 @@
+import React, { useEffect, useState } from 'react';
+import {useNavigate} from 'react-router-dom';
+import './ReviewProperties.css';
+
+const ReviewProperties = () => {
+  const [properties, setProperties] = useState([]);
+  const navigate=useNavigate();
+
+  useEffect(() => {
+    
+    
+        const fetchProperties = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/admin/review-properties',{
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        setProperties(data);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      } 
+    };
+
+    fetchProperties();
+  }, []);
+
+  const handleModify=(product)=>{
+         navigate(`/approve-property/${product._id}`,{state:{product}});
+  }
+
+  return (
+    <div className='product-page'>
+      <button className="back-btn" onClick={() => navigate('/dashboard')}>
+    ← Back to Dashboard
+     </button>
+      {properties.map(product => (
+        <div className="product-card" key={product.id}>
+          <img src={`http://localhost:4000${product.images[0]}`} alt={product.title} className="product-image" />
+          <div className="product-details">
+            <h2 className="product-title">{product.title}</h2>
+            <p> <strong>Price :</strong> {product.price}</p>
+            <p><strong>Location :</strong>{product.location}</p>
+            <div className="product-actions">
+              <button className="buy-btn" onClick={()=>handleModify(product)}>Click here to Approve/Reject</button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default ReviewProperties;

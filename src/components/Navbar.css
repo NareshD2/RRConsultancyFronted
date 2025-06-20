@@ -1,0 +1,91 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color:brown; /* dark background */
+  padding: 12px 20px;
+  border-bottom: #E7D3BB;
+  color: #f5f5f5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+.navbar-left {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color:#E7D3BB;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* User info styling */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  margin-right: 20px;
+  font-size: 0.85rem;
+  color: #d3d3d3;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #eeeeee;
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: #999999;
+}
+
+/* Generic button style */
+.nav-btn {
+  background-color: transparent;
+  border: 1px solid #6b4c9a; /* muted purple */
+  color: #6b4c9a;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background-color:rgb(221, 149, 149);
+  color: #ffffff;
+}
+
+/* Logout button specific style */
+.logout-btn {
+  border-color: #b22222; /* firebrick red */
+  color: #b22222;
+}
+
+.logout-btn:hover {
+  background-color: #b22222;
+  color: #ffffff;
+}
+.navbar-left h2 {
+  margin: 0;
+  padding-right: 20px;
+  color: #ffffff;
+}
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.25rem;
+  font-weight: bold;
+
+}
+.navbar-center h1 {
+  font-size: 1.8rem;         /* Increase as needed */
+  color:#fdf5df;            /* Example: golden yellow */
+  font-weight: bold;
+  margin: 0;
+}
