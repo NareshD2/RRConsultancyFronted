@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DashboardPage.css';
-
+const apiUrl = process.env.REACT_APP_API_URL;
 const instructions = [
   "Post your property easily",
   "Get verified leads instantly",
@@ -30,7 +30,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/me', {
+        const res = await fetch(`${apiUrl}/api/me`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -51,7 +51,7 @@ const DashboardPage = () => {
   useEffect(() => {
   const fetchWishlist = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/wishlist', {
+      const res = await fetch(`${apiUrl}/api/wishlist`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -90,7 +90,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/properties',{
+        const response = await fetch(`${apiUrl}/api/properties`,{
           method: 'GET',
           credentials: 'include',
         });
@@ -108,7 +108,7 @@ const DashboardPage = () => {
 
   const toggleWishlist = async (_id) => {
   try {
-    const res = await fetch(`http://localhost:4000/api/wishlist/${_id}`, {
+    const res = await fetch(`${apiUrl}/api/wishlist/${_id}`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -171,7 +171,7 @@ const filteredProperties = Array.isArray(allProperties)
   sessionStorage.removeItem('token');
 
   // Call backend to clear HttpOnly cookie
-  fetch('http://localhost:4000/api/logout', {
+  fetch(`${apiUrl}/api/logout`, {
     method: 'POST',
     credentials: 'include', // ensures cookies are sent
   })

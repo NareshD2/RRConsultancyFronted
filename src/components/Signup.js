@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import './Signup.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const Signup = () => {
   const formik = useFormik({
@@ -26,7 +27,7 @@ const Signup = () => {
     },
     onSubmit: async (values, { setSubmitting, setStatus }) => {
       try {
-        const response = await fetch('http://localhost:4000/api/signup', {
+        const response = await fetch(`${apiUrl}/api/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

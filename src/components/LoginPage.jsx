@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import './LoginPage.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -13,7 +14,7 @@ const LoginPage = () => {
     },
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const response = await fetch('http://localhost:4000/api/login', {
+        const response = await fetch(`${apiUrl}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(values),

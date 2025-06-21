@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import './EditPropertyPage.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const Approve = () => {
   const { id } = useParams();
@@ -128,7 +129,7 @@ console.log(formData);
     form.append('existingDocuments', JSON.stringify(existingDocuments));
 
     try {
-      const res = await fetch(`http://localhost:4000/api/property/${id}`, {
+      const res = await fetch(`${apiUrl}/api/property/${id}`, {
         method: 'PUT',
         credentials: 'include',
         body: form,
@@ -167,7 +168,7 @@ console.log(formData);
   form.append('existingDocuments', JSON.stringify(existingDocuments));
 
   try {
-    const res = await fetch(`http://localhost:4000/api/property/${id}`, {
+    const res = await fetch(`${apiUrl}/api/property/${id}`, {
       method: 'PUT',
       credentials: 'include',
       body: form,

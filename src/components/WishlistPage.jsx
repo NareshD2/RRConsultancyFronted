@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './WishlistPage.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -9,7 +10,7 @@ const WishlistPage = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/wishlist', {
+        const res = await fetch(`${apiUrl}/api/wishlist`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -42,7 +43,7 @@ const WishlistPage = () => {
                 }
             >
               <img
-                src={`http://localhost:4000${property.images[0]}`}
+                src={`${apiUrl}${property.images[0]}`}
                 alt={property.title}
               />
               <div className="property-info">

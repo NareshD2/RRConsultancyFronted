@@ -1,6 +1,7 @@
 import React from 'react';
 import './LandingPage.css';
 import {Link} from 'react-router-dom'
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const LandingPage = () => {
   return (

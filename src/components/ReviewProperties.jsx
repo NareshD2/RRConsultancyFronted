@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 import './ReviewProperties.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const ReviewProperties = () => {
   const [properties, setProperties] = useState([]);
@@ -11,7 +12,7 @@ const ReviewProperties = () => {
     
         const fetchProperties = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/admin/review-properties',{
+        const response = await fetch(`${apiUrl}/api/admin/review-properties`,{
           method: 'GET',
           credentials: 'include',
         });
@@ -36,7 +37,7 @@ const ReviewProperties = () => {
      </button>
       {properties.map(product => (
         <div className="product-card" key={product.id}>
-          <img src={`http://localhost:4000${product.images[0]}`} alt={product.title} className="product-image" />
+          <img src={`${apiUrl}${product.images[0]}`} alt={product.title} className="product-image" />
           <div className="product-details">
             <h2 className="product-title">{product.title}</h2>
             <p> <strong>Price :</strong> {product.price}</p>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './YourPropertiesPage.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const YourPropertiesPage = () => {
   const [properties, setProperties] = useState([]);
@@ -10,7 +11,7 @@ const YourPropertiesPage = () => {
   useEffect(() => {
     const fetchUserProperties = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/my-properties', {
+        const response = await fetch(`${apiUrl}/api/my-properties`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -47,7 +48,7 @@ const YourPropertiesPage = () => {
           {properties.map((property) => (
             <div key={property._id} className="property-card">
               <img
-                src={`http://localhost:4000${property.images[0]}`}
+                src={`${apiUrl}${property.images[0]}`}
                 alt={property.title}
                 className="property-image"
               />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './ProductDetailsPage.css';
 import Navbar from './Navbar';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const ProductDetailsPage = () => {
   const location = useLocation();
@@ -46,7 +47,7 @@ const ProductDetailsPage = () => {
             <div className="slider-container">
               
               <img
-                src={`http://localhost:4000${images[currentIndex]}`}
+                src={`${apiUrl}${images[currentIndex]}`}
                 alt={`property-${currentIndex + 1}`}
                 className="slider-image"
                  onClick={() => setZoomedIndex(currentIndex)}
@@ -65,7 +66,7 @@ const ProductDetailsPage = () => {
           <div className="video-section">
             <h3>Property Walkthrough</h3>
             <video className="property-video" controls>
-              <source src={`http://localhost:4000${property.video}`} type="video/mp4" />
+              <source src={`${apiUrl}${property.video}`} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -103,7 +104,7 @@ const ProductDetailsPage = () => {
     </button>
 
     <img
-      src={`http://localhost:4000${images[zoomedIndex]}`}
+      src={`${apiUrl}${images[zoomedIndex]}`}
       alt="Zoomed"
       className="zoomed-img"
       onClick={(e) => e.stopPropagation()}

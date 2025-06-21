@@ -1,6 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UploadProperty.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 
 const UploadProperty = () => {
@@ -76,7 +77,7 @@ const UploadProperty = () => {
       });
 
       try {
-        const response = await fetch('http://localhost:4000/api/properties', {
+        const response = await fetch(`${apiUrl}/api/properties`, {
           method: 'POST',
           body: propertyData,
           credentials:'include',

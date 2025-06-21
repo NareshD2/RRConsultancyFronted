@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import './EditPropertyPage.css';
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const EditPropertyPage = () => {
   const { id } = useParams();
@@ -118,7 +119,7 @@ console.log(formData);
     form.append('existingDocuments', JSON.stringify(existingDocuments));
 
     try {
-      const res = await fetch(`http://localhost:4000/api/property/${id}`, {
+      const res = await fetch(`${apiUrl}/api/property/${id}`, {
         method: 'PUT',
         credentials: 'include',
         body: form,
@@ -141,7 +142,7 @@ console.log(formData);
     if (!window.confirm('Are you sure you want to delete this property?')) return;
 
     try {
-      const res = await fetch(`http://localhost:4000/api/property/${id}`, {
+      const res = await fetch(`${apiUrl}/api/property/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -185,7 +186,7 @@ console.log(formData);
           <h4>Existing Images</h4>
           {existingImages.map((img, idx) => (
             <div key={idx}>
-              <img src={`http://localhost:4000${img}`} alt={`Image ${idx}`} width="100" />
+              <img src={`${apiUrl}${img}`} alt={`Image ${idx}`} width="100" />
               <button type="button" onClick={() => removeExistingMedia('images', idx)}>❌</button>
             </div>
           ))}
@@ -197,7 +198,7 @@ console.log(formData);
           <h4>Existing Video</h4>
           {existingVideo && (
             <div>
-              <video src={`http://localhost:4000${existingVideo}`} controls width="200" />
+              <video src={`${apiUrl}${existingVideo}`} controls width="200" />
               <button type="button" onClick={() => removeExistingMedia('video')}>❌</button>
             </div>
           )}
@@ -209,7 +210,7 @@ console.log(formData);
           <h4>Existing Documents</h4>
           {existingDocuments.map((doc, idx) => (
             <div key={idx}>
-              <a href={`http://localhost:4000${doc}`} target="_blank" rel="noopener noreferrer">{`Document ${idx + 1}`}</a>
+              <a href={`${apiUrl}${doc}`} target="_blank" rel="noopener noreferrer">{`Document ${idx + 1}`}</a>
               <button type="button" onClick={() => removeExistingMedia('documents', idx)}>❌</button>
             </div>
           ))}
