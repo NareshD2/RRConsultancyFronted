@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './EditPropertyPage.css';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const EditPropertyPage = () => {
@@ -10,7 +13,7 @@ const EditPropertyPage = () => {
   const propertyFromState = location.state?.property;
 
   const [formData, setFormData] = useState({
-    title:'',
+    title: '',
     area: '',
     length: '',
     breadth: '',
@@ -37,7 +40,6 @@ const EditPropertyPage = () => {
 
   useEffect(() => {
     const property = propertyFromState;
-    console.log(property);
 
     if (property) {
       setFormData({
@@ -60,11 +62,11 @@ const EditPropertyPage = () => {
       setExistingImages(property.images || []);
       setExistingVideo(property.video || null);
       setExistingDocuments(property.documents || []);
-    } 
+    }
   }, [id, propertyFromState]);
-  if (!propertyFromState) {
-       return <div>Loading property details...</div>;}
-console.log(formData);
+
+  if (!propertyFromState) return <div>Loading property details...</div>;
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -103,8 +105,7 @@ console.log(formData);
       form.append(key, val);
     });
 
-    // Change status to "Under Review" if originally approved
-    if (status === 'Approved' || status ==='Rejected' ) {
+    if (status === 'Approved' || status === 'Rejected') {
       form.append('status', 'Under Review');
     } else {
       form.append('status', status);
@@ -127,19 +128,23 @@ console.log(formData);
 
       const result = await res.json();
       if (res.ok) {
-        alert('Property updated successfully. Status set to Under Review.');
-        navigate('/your-properties');
+        toast.success('Property updated successfully. Status set to Under Review.', {
+          autoClose: 4000,
+          pauseOnHover: true,
+        });
+         setTimeout(() => navigate('/your-properties'), 4000);
       } else {
-        alert(result.message || 'Failed to update property');
+        toast.error(result.message || '❌ Failed to update property');
       }
     } catch (err) {
       console.error('Error updating property:', err);
-      alert('Something went wrong');
+      toast.error('❌ Something went wrong');
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this property?')) return;
+    const confirmed = window.confirm('Are you sure you want to delete this property?');
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`${apiUrl}/api/property/${id}`, {
@@ -148,40 +153,45 @@ console.log(formData);
       });
 
       if (res.ok) {
-        alert('Property deleted');
-        navigate('/your-properties');
+        toast.success('Property deleted successfully.', {
+          autoClose: 4000,
+        });
+        setTimeout(() => navigate('/your-properties'), 4000);
       } else {
         const result = await res.json();
-        alert(result.message || 'Failed to delete');
+        toast.error(result.message || '❌ Failed to delete property');
       }
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Failed to delete property');
+      toast.error('❌ Failed to delete property');
     }
   };
 
   return (
     <div className="edit-property-container">
-    <button className="back-btn" onClick={() => navigate('/your-properties')}>
-    ← Back to properties
-     </button>
+      <button className="back-btn" onClick={() => navigate('/your-properties')}>
+        ← Back to properties
+      </button>
 
       <h2>Edit Property</h2>
       <form onSubmit={handleSubmit} className="edit-property-form" encType="multipart/form-data">
-        <label>Title:<input type="text" name="title" value={formData.title} onChange={handleInputChange} required /></label>
-        <label>Area:<input type="text" name="area" value={formData.area} onChange={handleInputChange} /></label>
-        <label>Length:<input type="text" name="length" value={formData.length} onChange={handleInputChange} /></label>
-        <label>Breadth:<input type="text" name="breadth" value={formData.breadth} onChange={handleInputChange} /></label>
-        <label>Shape:<input type="text" name="shape" value={formData.shape} onChange={handleInputChange} /></label>
-        <label>Soil Color:<input type="text" name="soilColor" value={formData.soilColor} onChange={handleInputChange} /></label>
-        <label>Price:<input type="text" name="price" value={formData.price} onChange={handleInputChange} required /></label>
-        <label>Location:<input type="text" name="location" value={formData.location} onChange={handleInputChange} required /></label>
-        <label>Description:<textarea name="description" value={formData.description} onChange={handleInputChange} /></label>
-        <label>Loan Facility:<input type="checkbox" name="loanFacility" checked={formData.loanFacility} onChange={handleInputChange} /></label>
-        <label>Owner Name:<input type="text" name="ownerName" value={formData.ownerName} onChange={handleInputChange} /></label>
-        <label>Owner Phone:<input type="text" name="ownerPhone" value={formData.ownerPhone} onChange={handleInputChange} /></label>
-        <label>Owner Aadhar:<input type="text" name="ownerAadhar" value={formData.ownerAadhar} onChange={handleInputChange} /></label>
+        {/* Text Inputs */}
+        {['title', 'area', 'length', 'breadth', 'shape', 'soilColor', 'price', 'location', 'ownerName', 'ownerPhone', 'ownerAadhar'].map((field) => (
+          <label key={field}>
+            {field.charAt(0).toUpperCase() + field.slice(1)}:
+            <input type="text" name={field} value={formData[field]} onChange={handleInputChange} required={['title', 'price', 'location'].includes(field)} />
+          </label>
+        ))}
+        <label>
+          Description:
+          <textarea name="description" value={formData.description} onChange={handleInputChange} />
+        </label>
+        <label>
+          Loan Facility:
+          <input type="checkbox" name="loanFacility" checked={formData.loanFacility} onChange={handleInputChange} />
+        </label>
 
+        {/* Media Sections */}
         <div className="media-section">
           <h4>Existing Images</h4>
           {existingImages.map((img, idx) => (
@@ -191,7 +201,6 @@ console.log(formData);
             </div>
           ))}
         </div>
-
         <label>Add New Images:<input type="file" name="images" accept="image/*" multiple onChange={handleFileChange} /></label>
 
         <div className="media-section">
@@ -203,7 +212,6 @@ console.log(formData);
             </div>
           )}
         </div>
-
         <label>Add Video:<input type="file" name="video" accept="video/*" onChange={handleFileChange} /></label>
 
         <div className="media-section">
@@ -215,12 +223,13 @@ console.log(formData);
             </div>
           ))}
         </div>
-
         <label>Add Documents:<input type="file" name="documents" accept=".pdf" multiple onChange={handleFileChange} /></label>
 
         <button type="submit">Update Property</button>
         <button type="button" onClick={handleDelete} className="delete-btn">Delete Property</button>
       </form>
+
+      <ToastContainer position="top-right" autoClose={4000} />
     </div>
   );
 };

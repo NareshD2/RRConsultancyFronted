@@ -1,12 +1,13 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './UploadProperty.css';
-const apiUrl = process.env.REACT_APP_API_URL;
 
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const UploadProperty = () => {
   const [formData, setFormData] = useState({
-    
     title: '',
     area: '',
     length: '',
@@ -20,10 +21,10 @@ const UploadProperty = () => {
     ownerPhone: '',
     ownerAadhar: '',
     status: 'Under Review',
-    price:'',
+    price: '',
   });
-  const navigate=useNavigate();
 
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
   const [video, setVideo] = useState(null);
   const [documents, setDocuments] = useState([]);
@@ -33,7 +34,7 @@ const UploadProperty = () => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -51,58 +52,100 @@ const UploadProperty = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const requiredFields = [
+      'title',
+      'area',
+      'length',
+      'breadth',
+      'shape',
+      'soilColor',
+      'location',
+      'description',
+      'ownerName',
+      'ownerPhone',
+      'ownerAadhar',
+      'price',
+    ];
+
+    const emptyField = requiredFields.find((field) => !formData[field]);
+    if (emptyField) {
+      toast.error(`Please fill out the '${emptyField}' field.`);
+      return;
+    }
+
+    if (images.length === 0) {
+      toast.error('Please upload at least one image.');
+      return;
+    }
+
+    if (!video) {
+      toast.error('Please upload a property video.');
+      return;
+    }
+
+    if (documents.length === 0) {
+      toast.error('Please upload at least one legal document.');
+      return;
+    }
+
     setSubmitted(true);
-    alert('Property uploaded and is under review.');
   };
 
   useEffect(() => {
     const uploadProperty = async () => {
       if (!submitted) return;
 
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please log in to upload properties.');
+        return;
+      }
+
       const propertyData = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         propertyData.append(key, value);
       });
 
-      images.forEach((img, i) => {
-        propertyData.append(`images`, img);
-      });
-
-      if (video) {
-        propertyData.append('video', video);
-      }
-
-      documents.forEach((doc, i) => {
-        propertyData.append('documents', doc);
-      });
+      images.forEach((img) => propertyData.append('images', img));
+      if (video) propertyData.append('video', video);
+      documents.forEach((doc) => propertyData.append('documents', doc));
 
       try {
         const response = await fetch(`${apiUrl}/api/properties`, {
           method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: propertyData,
-          credentials:'include',
+          credentials: 'include',
         });
 
         if (response.ok) {
-          console.log('Property successfully uploaded!');
+          toast.success('Property uploaded successfully and is under review.');
+          setTimeout(() => navigate('/your-properties'), 2000);
         } else {
-          console.error('Failed to upload property.');
+          const errorData = await response.json();
+          console.error('Failed to upload property:', errorData);
+          toast.error('Upload failed: ' + (errorData.message || 'Unknown error'));
         }
       } catch (err) {
-        console.error('Error uploading property:', err);
+        console.error('Upload error:', err);
+        toast.error('An error occurred while uploading the property.');
       } finally {
         setSubmitted(false);
       }
     };
 
     uploadProperty();
-  }, [submitted, formData, images, video, documents]);
+  }, [submitted, formData, images, video, documents, navigate]);
 
   return (
     <div className="upload-property-container">
+      <ToastContainer position="top-right" autoClose={3000} />
       <button className="back-button" onClick={() => navigate(-1)}>
-          ← Go Back
-        </button>
+        ← Go Back
+      </button>
       <h2>Upload Your Property</h2>
       <form className="upload-form" onSubmit={handleSubmit}>
         <input name="title" placeholder="Property Title" onChange={handleChange} required />
@@ -112,16 +155,15 @@ const UploadProperty = () => {
         <input name="shape" placeholder="Shape" onChange={handleChange} required />
         <input name="soilColor" placeholder="Soil Color" onChange={handleChange} required />
         <input name="location" placeholder="Location" onChange={handleChange} required />
-
         <label>
           <input type="checkbox" name="loanFacility" onChange={handleChange} /> Loan Facility Available
         </label>
-
         <textarea name="description" placeholder="Property Description" onChange={handleChange} required />
         <input name="ownerName" placeholder="Owner Name" onChange={handleChange} required />
         <input name="ownerPhone" placeholder="Owner Phone No" onChange={handleChange} required />
         <input name="ownerAadhar" placeholder="Owner Aadhar No" onChange={handleChange} required />
-         <input name="price" placeholder="price" onChange={handleChange} required />
+        <input name="price" placeholder="Price" onChange={handleChange} required />
+
         <label>Upload Images (multiple):</label>
         <input type="file" multiple accept="image/*" onChange={handleImageUpload} />
 

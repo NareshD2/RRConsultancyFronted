@@ -9,11 +9,20 @@ const YourPropertiesPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+     const token = localStorage.getItem('token'); // ✅ Get JWT token
+
+    if (!token) {
+      console.error('No token found. Please log in.');
+      return;
+    }
     const fetchUserProperties = async () => {
       try {
         const response = await fetch(`${apiUrl}/api/my-properties`, {
-          method: 'GET',
-          credentials: 'include',
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Send token in headers
+          'Content-Type': 'application/json'
+        }
         });
         const data = await response.json();
         setProperties(data);

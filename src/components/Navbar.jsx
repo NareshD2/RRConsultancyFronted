@@ -1,7 +1,7 @@
 import React from 'react';
 import './Navbar.css';
 import { useLocation, Link } from 'react-router-dom';
-const apiUrl = process.env.REACT_APP_API_URL;
+
 
 const Navbar = ({searchTerm, setSearchTerm}) => {
   const location = useLocation();

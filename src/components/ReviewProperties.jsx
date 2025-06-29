@@ -8,13 +8,21 @@ const ReviewProperties = () => {
   const navigate=useNavigate();
 
   useEffect(() => {
-    
+       const token = localStorage.getItem('token'); // ✅ Get JWT token
+
+    if (!token) {
+      console.error('No token found. Please log in.');
+      return;
+    }
     
         const fetchProperties = async () => {
       try {
         const response = await fetch(`${apiUrl}/api/admin/review-properties`,{
           method: 'GET',
-          credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Send token in headers
+          'Content-Type': 'application/json'
+        }
         });
         const data = await response.json();
         setProperties(data);

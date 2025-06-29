@@ -6,23 +6,40 @@ const apiUrl = process.env.REACT_APP_API_URL;
 const WishlistPage = () => {
   const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
-
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/wishlist`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-        const data = await res.json();
-        setWishlist(data);
-      } catch (err) {
-        console.error('Failed to fetch wishlist:', err);
-      }
-    };
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem('token'); // ✅ Get JWT token
 
-    fetchWishlist();
-  }, []);
+    if (!token) {
+      console.error('No token found. Please log in.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiUrl}/api/wishlist`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ Send token in headers
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        console.error('Failed to fetch wishlist: ', res.statusText);
+        return;
+      }
+
+      const data = await res.json();
+      setWishlist(data);
+    } catch (err) {
+      console.error('Error fetching wishlist:', err);
+    }
+  };
+
+  fetchWishlist();
+}, []);
+
+  
 
   return (
     <div className="wishlist-page">

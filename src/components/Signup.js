@@ -1,6 +1,9 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import './Signup.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Signup = () => {
@@ -9,7 +12,7 @@ const Signup = () => {
       username: '',
       email: '',
       password: '',
-      phonenumber: ''
+      phonenumber: '',
     },
     validate: values => {
       const errors = {};
@@ -25,7 +28,7 @@ const Signup = () => {
 
       return errors;
     },
-    onSubmit: async (values, { setSubmitting, setStatus }) => {
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
         const response = await fetch(`${apiUrl}/api/signup`, {
           method: 'POST',
@@ -38,12 +41,13 @@ const Signup = () => {
         const result = await response.json();
 
         if (response.ok) {
-          setStatus({ success: 'Signup successful!' });
+          toast.success('Signup successful!');
+          resetForm();
         } else {
-          setStatus({ error: result.message || 'Signup failed' });
+          toast.error(result.message || 'Signup failed');
         }
       } catch (err) {
-        setStatus({ error: 'Server error. Try again.' });
+        toast.error('Server error. Try again.');
       } finally {
         setSubmitting(false);
       }
@@ -52,6 +56,7 @@ const Signup = () => {
 
   return (
     <div className="container">
+      <ToastContainer position="top-right" autoClose={3000} />
       <h1>User Signup</h1>
       <form onSubmit={formik.handleSubmit}>
         <input
@@ -90,10 +95,9 @@ const Signup = () => {
         />
         {formik.errors.phonenumber && <div className="error">{formik.errors.phonenumber}</div>}
 
-        <button type="submit" disabled={formik.isSubmitting}>Sign Up</button>
-
-        {formik.status?.success && <p className="success">{formik.status.success}</p>}
-        {formik.status?.error && <p className="error">{formik.status.error}</p>}
+        <button type="submit" disabled={formik.isSubmitting}>
+          {formik.isSubmitting ? 'Signing up...' : 'Sign Up'}
+        </button>
       </form>
       <p>Already have an account? <a href="/login">Login here</a></p>
     </div>

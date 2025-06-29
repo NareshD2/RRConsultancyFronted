@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './ProductDetailsPage.css';
-import Navbar from './Navbar';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const ProductDetailsPage = () => {

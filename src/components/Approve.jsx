@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './EditPropertyPage.css';
+
 const apiUrl = process.env.REACT_APP_API_URL;
 
 const Approve = () => {
@@ -10,7 +13,7 @@ const Approve = () => {
   const propertyFromState = location.state?.product;
 
   const [formData, setFormData] = useState({
-    title:'',
+    title: '',
     area: '',
     length: '',
     breadth: '',
@@ -23,13 +26,11 @@ const Approve = () => {
     ownerName: '',
     ownerPhone: '',
     ownerAadhar: '',
-    
   });
+
   const [showTagModal, setShowTagModal] = useState(false);
-const [pendingFormSubmit, setPendingFormSubmit] = useState(null);
-const [tagInput, setTagInput] = useState('');
-
-
+  const [pendingFormSubmit, setPendingFormSubmit] = useState(null);
+  const [tagInput, setTagInput] = useState('');
   const [status, setStatus] = useState('Under Review');
   const [existingImages, setExistingImages] = useState([]);
   const [existingVideo, setExistingVideo] = useState(null);
@@ -42,8 +43,6 @@ const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     const property = propertyFromState;
-    console.log(property);
-
     if (property) {
       setFormData({
         title: property.title || '',
@@ -65,11 +64,11 @@ const [tagInput, setTagInput] = useState('');
       setExistingImages(property.images || []);
       setExistingVideo(property.video || null);
       setExistingDocuments(property.documents || []);
-    } 
+    }
   }, [id, propertyFromState]);
-  if (!propertyFromState) {
-       return <div>Loading property details...</div>;}
-console.log(formData);
+
+  if (!propertyFromState) return <div>Loading property details...</div>;
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -99,26 +98,21 @@ console.log(formData);
       setExistingVideo(null);
     }
   };
-  const handleSubmit = (e) => {
-  e.preventDefault();
-  setPendingFormSubmit(true);  // Flag to trigger actual submit later
-  setShowTagModal(true);       // Show modal
-};
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setPendingFormSubmit(true);
+    setShowTagModal(true);
+  };
 
   const submitFormWithTag = async () => {
-   
-
     const form = new FormData();
     Object.entries(formData).forEach(([key, val]) => {
       form.append(key, val);
     });
 
-    // Change status to "Under Review" if originally approved
-   
-    form.append('status',status);
+    form.append('status', status);
     form.append('tag', tagInput.trim());
-    
 
     newFiles.images.forEach((img) => form.append('images', img));
     if (newFiles.video) form.append('video', newFiles.video);
@@ -137,64 +131,68 @@ console.log(formData);
 
       const result = await res.json();
       if (res.ok) {
-        alert('Property Approved successfully.');
-        navigate('/review-properties');
+         toast.success('Property approved successfully.', {
+    autoClose: 5000,
+    closeOnClick: true,
+    pauseOnHover: true,
+  });
+  setShowTagModal(false);
+       setTimeout(() => navigate('/review-properties'), 2000);
       } else {
-        alert(result.message || 'Failed to update property');
+        toast.error(result.message || 'Failed to update property');
       }
     } catch (err) {
       console.error('Error updating property:', err);
-      alert('Something went wrong');
+      toast.error('Something went wrong while updating the property');
     }
   };
 
- const handleDelete = async () => {
-  if (!window.confirm('Are you sure you want to reject this property?')) return;
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to reject this property?')) return;
 
-  const form = new FormData();
-  Object.entries(formData).forEach(([key, val]) => {
-    form.append(key, val);
-  });
-
-  form.append('status', 'Rejected');
-  form.append('tag', ''); // You can prompt for a tag if needed
-
-  newFiles.images.forEach((img) => form.append('images', img));
-  if (newFiles.video) form.append('video', newFiles.video);
-  newFiles.documents.forEach((doc) => form.append('documents', doc));
-
-  form.append('existingImages', JSON.stringify(existingImages));
-  form.append('existingVideo', existingVideo || '');
-  form.append('existingDocuments', JSON.stringify(existingDocuments));
-
-  try {
-    const res = await fetch(`${apiUrl}/api/property/${id}`, {
-      method: 'PUT',
-      credentials: 'include',
-      body: form,
+    const form = new FormData();
+    Object.entries(formData).forEach(([key, val]) => {
+      form.append(key, val);
     });
 
-    const result = await res.json();
-    if (res.ok) {
-      alert('Property rejected successfully.');
-      navigate('/review-properties');
-    } else {
-      alert(result.message || 'Failed to reject property');
-    }
-  } catch (err) {
-    console.error('Error rejecting property:', err);
-    alert('Something went wrong while rejecting the property');
-  }
-};
+    form.append('status', 'Rejected');
+    form.append('tag', '');
 
+    newFiles.images.forEach((img) => form.append('images', img));
+    if (newFiles.video) form.append('video', newFiles.video);
+    newFiles.documents.forEach((doc) => form.append('documents', doc));
+
+    form.append('existingImages', JSON.stringify(existingImages));
+    form.append('existingVideo', existingVideo || '');
+    form.append('existingDocuments', JSON.stringify(existingDocuments));
+
+    try {
+      const res = await fetch(`${apiUrl}/api/property/${id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: form,
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        toast.success('Property rejected successfully.');
+        navigate('/review-properties');
+      } else {
+        toast.error(result.message || 'Failed to reject property');
+      }
+    } catch (err) {
+      console.error('Error rejecting property:', err);
+      toast.error('Something went wrong while rejecting the property');
+    }
+  };
 
   return (
     <div className="edit-property-container">
-    <button className="back-btn" onClick={() => navigate('/review-properties')}>
-    ← Back to properties
-     </button>
+      <button className="back-btn" onClick={() => navigate('/review-properties')}>
+        ← Back to properties
+      </button>
 
-      <h2>Approve property Listing</h2>
+      <h2>Approve Property Listing</h2>
       <form onSubmit={handleSubmit} className="edit-property-form" encType="multipart/form-data">
         <label>Title:<input type="text" name="title" value={formData.title} onChange={handleInputChange} required /></label>
         <label>Area:<input type="text" name="area" value={formData.area} onChange={handleInputChange} /></label>
@@ -249,26 +247,26 @@ console.log(formData);
         <button type="submit">Approve Property</button>
         <button type="button" onClick={handleDelete} className="delete-btn">Reject Property</button>
       </form>
-      {showTagModal && (
-  <div className="modal-overlay">
-    <div className="modal-content">
-      <h3>Optional: Add a Tag</h3>
-      <input
-        type="text"
-        value={tagInput}
-        onChange={(e) => setTagInput(e.target.value)}
-        placeholder="Enter a tag (optional)"
-      />
-      <div className="modal-buttons">
-        <button onClick={submitFormWithTag}>Submit</button>
-        <button onClick={() => { setTagInput(''); submitFormWithTag(); }}>
-          Skip
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
+      {showTagModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Optional: Add a Tag</h3>
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              placeholder="Enter a tag (optional)"
+            />
+            <div className="modal-buttons">
+              <button onClick={submitFormWithTag}>Submit</button>
+              <button onClick={() => { setTagInput(''); submitFormWithTag(); }}>Skip</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

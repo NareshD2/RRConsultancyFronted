@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DashboardPage.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const apiUrl = process.env.REACT_APP_API_URL;
+
 const instructions = [
   "Post your property easily",
   "Get verified leads instantly",
@@ -22,57 +26,63 @@ const DashboardPage = () => {
 
   const instructionSliderRef = useRef(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // 🔥 Load user from localStorage instead of /api/me
+  useEffect(() => {
+    if (!token) {
+      toast.error('Please login to continue.');
+      navigate('/login');
+      return;
+    }
+
+    const storedUserString = localStorage.getItem('user');
+if (storedUserString) {
+  try {
+    const storedUser = JSON.parse(storedUserString);
+    setUser(storedUser);
+  } catch (err) {
+    console.error("Invalid user JSON:", err);
+    localStorage.removeItem('user'); // optional: clean corrupted data
+    toast.error('Corrupted user data. Please login again.');
+    navigate('/login');
+  }
+} else {
+  toast.error('Session expired. Please login again.');
+  navigate('/login');
+}
+
+  }, [token, navigate]);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchWishlist = async () => {
       try {
-        const res = await fetch(`${apiUrl}/api/me`, {
-          method: 'GET',
-          credentials: 'include',
+        const res = await fetch(`${apiUrl}/api/wishlist`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
 
         if (res.ok) {
           const data = await res.json();
-          setUser(data);
+          const propertyIds = data.map((item) => item._id);
+          setWishlist(propertyIds);
         } else {
-          console.log("Not authenticated");
+          toast.error('Failed to fetch wishlist');
         }
       } catch (err) {
-        console.error("Failed to fetch user:", err);
+        console.error('Error fetching wishlist:', err);
+        toast.error('Could not load wishlist');
       }
     };
 
-    fetchUser();
-  }, []);
-  useEffect(() => {
-  const fetchWishlist = async () => {
-    try {
-      const res = await fetch(`${apiUrl}/api/wishlist`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const propertyIds = data.map((item) => item._id); // Extract _ids from the wishlist items
-        setWishlist(propertyIds);
-      } else {
-        console.error('Failed to fetch wishlist');
-      }
-    } catch (err) {
-      console.error('Error fetching wishlist:', err);
+    if (user) {
+      fetchWishlist();
     }
-  };
-
-  if (user) {
-    fetchWishlist();
-  }
-}, [user]);  // <-- runs only after user is set
-
-
+  }, [user, token]);
+ console.log(user);
   useEffect(() => {
     const slider = instructionSliderRef.current;
     const scrollAmount = 260;
@@ -90,14 +100,12 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/properties`,{
-          method: 'GET',
-          credentials: 'include',
-        });
+        const response = await fetch(`${apiUrl}/api/properties`);
         const data = await response.json();
         setAllProperties(data);
       } catch (error) {
         console.error('Error fetching properties:', error);
+        toast.error('Failed to load properties.');
       } finally {
         setLoadingProperties(false);
       }
@@ -107,49 +115,49 @@ const DashboardPage = () => {
   }, []);
 
   const toggleWishlist = async (_id) => {
-  try {
-    const res = await fetch(`${apiUrl}/api/wishlist/${_id}`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      const res = await fetch(`${apiUrl}/api/wishlist/${_id}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-    if (res.ok) {
-      setWishlist((prev) =>
-        prev.includes(_id) ? prev.filter((item) => item !== _id) : [...prev, _id]
-      );
-    } else {
-      console.error('Failed to update wishlist');
+      if (res.ok) {
+        setWishlist((prev) =>
+          prev.includes(_id)
+            ? prev.filter((item) => item !== _id)
+            : [...prev, _id]
+        );
+      } else {
+        toast.error('Failed to update wishlist');
+      }
+    } catch (err) {
+      console.error('Error updating wishlist:', err);
+      toast.error('Something went wrong');
     }
-  } catch (err) {
-    console.error('Error updating wishlist:', err);
-  }
-};
+  };
 
-const filteredProperties = Array.isArray(allProperties) 
-  ? allProperties.filter(
-    (property) =>
-      property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.price?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-   )
-  : [];
+  const filteredProperties = Array.isArray(allProperties)
+    ? allProperties.filter((property) =>
+        property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        property.price?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
-  // Helper to parse price string like "₹1.2 Cr" to number for sorting
   const parsePrice = (priceString) => {
     if (!priceString) return 0;
-    let num = 0;
     const cleaned = priceString.replace(/[^0-9.]/g, '');
     if (priceString.toLowerCase().includes('cr')) {
-      num = parseFloat(cleaned) * 10000000; // 1 Cr = 10 million
+      return parseFloat(cleaned) * 10000000;
     } else if (priceString.toLowerCase().includes('lakh') || priceString.toLowerCase().includes('lac')) {
-      num = parseFloat(cleaned) * 100000; // 1 Lakh = 100,000
+      return parseFloat(cleaned) * 100000;
     } else {
-      num = parseFloat(cleaned);
+      return parseFloat(cleaned);
     }
-    return isNaN(num) ? 0 : num;
   };
-    
-  // Sort filteredProperties based on sortOption
+
   const sortedProperties = React.useMemo(() => {
     let sorted = [...filteredProperties];
     if (sortOption === 'Price: Low to High') {
@@ -157,46 +165,23 @@ const filteredProperties = Array.isArray(allProperties)
     } else if (sortOption === 'Price: High to Low') {
       sorted.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
     } else if (sortOption === 'Most Recent') {
-      // Assuming property has a createdAt or date field
-      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sorted.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     }
     return sorted;
   }, [filteredProperties, sortOption]);
 
   const handleLogout = () => {
-  alert('Logging out...');
-  
-  // Clear client-side tokens
-  localStorage.removeItem('token');
-  sessionStorage.removeItem('token');
-
-  // Call backend to clear HttpOnly cookie
-  fetch(`${apiUrl}/api/logout`, {
-    method: 'POST',
-    credentials: 'include', // ensures cookies are sent
-  })
-    .then((res) => {
-      if (res.ok) {
-        navigate('/login'); // Navigate only after successful logout
-      } else {
-        console.error('Logout failed on server');
-        navigate('/login'); // Still redirect, fallback
-      }
-    })
-    .catch((err) => {
-      console.error('Logout request error:', err);
-      navigate('/login'); // fallback on error
-    });
-};
-
-
-  const handleShowWishlist = () => {
-    navigate('/wishlist');
+    toast.info('Logging out...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
   };
+
+  
 
   return (
     <div className="dashboard-container">
-      {/* Top Navigation */}
+      <ToastContainer position="top-right" autoClose={3000} />
       <nav className="top-navbar">
         <div className="navbar-left">
           <button className="hamburger" onClick={toggleSidebar}>☰</button>
@@ -219,7 +204,6 @@ const filteredProperties = Array.isArray(allProperties)
       </nav>
 
       <div className="main-content">
-        {/* Sidebar */}
         <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
           {user ? (
             <>
@@ -227,21 +211,18 @@ const filteredProperties = Array.isArray(allProperties)
               <p>{user.email}</p>
               <button onClick={() => navigate('/your-properties')}>Your Properties</button>
               <button onClick={() => navigate('/upload-property')}>Upload a Property</button>
-              <button onClick={handleShowWishlist}>Wishlist</button>
-              {user.isadmin === true && (
-  <button onClick={() => navigate('/review-properties')}>Review Properties</button>
-)}
+              <button onClick={()=>navigate('/wishlist')}>Wishlist</button>
+              {user.isAdmin === true && (
+                <button onClick={() => navigate('/review-properties')}>Review Properties</button>
+              )}
               <button onClick={handleLogout}>Logout</button>
             </>
           ) : (
-            <p>Guest Mode Login for more Features....</p>
+            <p>Guest Mode - Login for more features...</p>
           )}
         </aside>
 
-        {/* Main Dashboard Area */}
         <div className="dashboard">
-          
-
           <section className="instructions-section">
             <h2>Why Choose Us?</h2>
             <div className="instructions-slider" ref={instructionSliderRef}>
@@ -264,11 +245,12 @@ const filteredProperties = Array.isArray(allProperties)
                   onClick={() =>
                     navigate(`/property/${property._id}`, { state: { property } })
                   }
-                > 
-                 {property.tag && property.tag.trim().length>0 && (
-                  <div className="tag">{property.tag}</div>)}
+                >
+                  {property.tag && property.tag.trim().length > 0 && (
+                    <div className="tag">{property.tag}</div>
+                  )}
                   <img
-                    src={`http://localhost:4000${property.images[0]}`}
+                    src={`${apiUrl}${property.images[0]}`}
                     alt={property.title}
                   />
                   <div className="property-info">
@@ -276,9 +258,7 @@ const filteredProperties = Array.isArray(allProperties)
                     <p>{property.location}</p>
                     <span className="price">{property.price}</span>
                     <button
-                      className={`wishlist-btn ${
-                        wishlist.includes(property._id) ? 'active' : ''
-                      }`}
+                      className={`wishlist-btn ${wishlist.includes(property._id) ? 'active' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleWishlist(property._id);
