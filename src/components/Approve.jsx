@@ -212,7 +212,7 @@ const Approve = () => {
           <h4>Existing Images</h4>
           {existingImages.map((img, idx) => (
             <div key={idx}>
-              <img src={`http://localhost:4000${img}`} alt={`Image ${idx}`} width="100" />
+              <img src={`${process.env.REACT_APP_API_URL}${img}`} alt={`Image ${idx}`} width="100" />
               <button type="button" onClick={() => removeExistingMedia('images', idx)}>❌</button>
             </div>
           ))}
@@ -224,7 +224,7 @@ const Approve = () => {
           <h4>Existing Video</h4>
           {existingVideo && (
             <div>
-              <video src={`http://localhost:4000${existingVideo}`} controls width="200" />
+              <video src={`${process.env.REACT_APP_API_URL}${existingVideo}`} controls width="200" />
               <button type="button" onClick={() => removeExistingMedia('video')}>❌</button>
             </div>
           )}
@@ -236,7 +236,7 @@ const Approve = () => {
           <h4>Existing Documents</h4>
           {existingDocuments.map((doc, idx) => (
             <div key={idx}>
-              <a href={`http://localhost:4000${doc}`} target="_blank" rel="noopener noreferrer">{`Document ${idx + 1}`}</a>
+              <a href={`${process.env.REACT_APP_API_URL}${doc}`} target="_blank" rel="noopener noreferrer">{`Document ${idx + 1}`}</a>
               <button type="button" onClick={() => removeExistingMedia('documents', idx)}>❌</button>
             </div>
           ))}
